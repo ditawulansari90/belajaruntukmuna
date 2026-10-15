@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Media Pembelajaran Interaktif ABK</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Fredoka', cursive, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: linear-gradient(135deg, #FFDEE9 0%, #B5FFFC 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 15px;
+    }
+
+    .app-container {
+      background: #FFFFFF;
+      width: 100%;
+      max-width: 800px;
+      border-radius: 30px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+      padding: 25px;
+      border: 6px solid #FFD166;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Screen Views */
+    .screen {
+      display: none;
+      animation: fadeIn 0.4s ease-in-out;
+    }
+    .screen.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Header & Branding */
+    .header-title {
+      text-align: center;
+      color: #FF477E;
+      font-size: 2.2rem;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px #FFD166;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #4EA8DE;
+      font-size: 1.2rem;
+      margin-bottom: 25px;
+    }
+
+    /* Input Section */
+    .student-info {
+      background: #F0F7FF;
+      padding: 20px;
+      border-radius: 20px;
+      border: 3px dashed #4EA8DE;
+      margin-bottom: 25px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      font-size: 1.1rem;
+      color: #06D6A0;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+
+    select, input[type="text"] {
+      width: 100%;
+      padding: 12px 18px;
+      font-size: 1.1rem;
+      border: 3px solid #70C1B3;
+      border-radius: 15px;
+      outline: none;
+      background: #FFF;
+    }
+
+    /* Menu Subject Grid */
+    .subject-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 18px;
+      margin-top: 15px;
+    }
+
+    .subject-btn {
+      background: #FFF;
+      border: 4px solid;
+      border-radius: 22px;
+      padding: 20px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 8px 0 rgba(0,0,0,0.1);
+    }
+
+    .subject-btn:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 0 rgba(0,0,0,0.1);
+    }
+
+    .subject-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+    }
+
+    .subject-btn img {
+      width: 70px;
+      height: 70px;
+      object-fit: contain;
+      margin-bottom: 10px;
+    }
+
+    .subject-btn h3 {
+      font-size: 1.2rem;
+    }
+
+    /* Subject Colors */
+    .mat { border-color: #FF595E; color: #FF595E; }
+    .indo { border-color: #FFCA3A; color: #D4A300; }
+    .ipas { border-color: #8AC926; color: #6A9E1B; }
+    .ppkn { border-color: #1982C4; color: #1982C4; }
+
+    /* Quiz Screen Elements */
+    .quiz-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid #EEE;
+    }
+
+    .badge {
+      background: #FFD166;
+      color: #333;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+
+    .btn-audio {
+      background: #06D6A0;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 15px;
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 0 #04A77D;
+    }
+
+    .btn-audio:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 #04A77D;
+    }
+
+    .question-box {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .question-text {
+      font-size: 1.4rem;
+      color: #333;
+      margin-bottom: 15px;
+    }
+
+    .question-img {
+      max-width: 100%;
+      max-height: 220px;
+      border-radius: 20px;
+      border: 4px solid #FFD166;
+      object-fit: contain;
+      margin: 0 auto;
+      display: block;
+    }
+
+    /* Options Grid */
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .option-btn {
+      background: #F8F9FA;
+      border: 3px solid #CED4DA;
+      border-radius: 18px;
+      padding: 15px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .option-btn:hover {
+      border-color: #4EA8DE;
+      background: #EBF5FF;
+    }
+
+    /* Result Screen */
+    .result-box {
+      text-align: center;
+      padding: 20px 10px;
+    }
+
+    .score-display {
+      font-size: 4rem;
+      font-weight: bold;
+      margin: 15px 0;
+    }
+
+    .score-high { color: #06D6A0; }
+    .score-low { color: #FF595E; }
+
+    .feedback-msg {
+      font-size: 1.6rem;
+      margin-bottom: 20px;
+    }
+
+    .actions-box {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 25px;
+    }
+
+    .btn-action {
+      width: 100%;
+      padding: 14px;
+      font-size: 1.1rem;
+      border-radius: 15px;
+      border: none;
+      cursor: pointer;
+      color: white;
+      font-weight: bold;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-wa { background: #25D366; box-shadow: 0 4px 0 #1EBE5D; }
+    .btn-sheet { background: #4EA8DE; box-shadow: 0 4px 0 #3A81AC; }
+    .btn-csv { background: #FFCA3A; color: #333; box-shadow: 0 4px 0 #D4A300; }
+    .btn-home { background: #FF595E; box-shadow: 0 4px 0 #D84347; }
+
+    .btn-action:active {
+      transform: translateY(2px);
+      box-shadow: none;
+    }
+
+    .teacher-config {
+      margin-top: 20px;
+      font-size: 0.9rem;
+      background: #FFF9E6;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #FFE082;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+
+    <!-- 1. SCREEN MENU UTAMA -->
+    <div id="screen-menu" class="screen active">
+      <h1 class="header-title">🌟 Belajar Ceria 🌟</h1>
+      <p class="subtitle">Pilih Namamu & Pelajaran yang Ingin Dimainkan!</p>
+
+      <div class="student-info">
+        <div class="form-group">
+          <label for="student-select">👤 Pilih Nama Siswa:</label>
+          <select id="student-select">
+            <option value="">-- Klik untuk Pilih Nama --</option>
+            <option value="Ahmad Bibi Prianto">Ahmad Bibi Prianto</option>
+            <option value="Ahmad Ragil Setiawan">Ahmad Ragil Setiawan</option>
+            <option value="Ahmad Aidillah">Ahmad Aidillah</option>
+            <option value="An Nisa Alimah">An Nisa Alimah</option>
+            <option value="Azzahra Radya Utami">Azzahra Radya Utami</option>
+            <option value="Fatkhul Mahdi Mubarok">Fatkhul Mahdi Mubarok</option>
+            <option value="Gibran Albiyananda Putra">Gibran Albiyananda Putra</option>
+            <option value="Muhammad Dandiansyah">Muhammad Dandiansyah</option>
+            <option value="Muhammad Irawan">Muhammad Irawan</option>
+            <option value="Muhammad Rava Azka Putra">Muhammad Rava Azka Putra</option>
+            <option value="Munawarah Annisa Rahma">Munawarah Annisa Rahma</option>
+            <option value="Nafisa Nur Adila Sari">Nafisa Nur Adila Sari</option>
+            <option value="Naila Lailatul Zahwa">Naila Lailatul Zahwa</option>
+            <option value="Rangga Syura">Rangga Syura</option>
+            <option value="Silva Ananta Nur Afifah">Silva Ananta Nur Afifah</option>
+            <option value="Widya Erlin Sa'diyah">Widya Erlin Sa'diyah</option>
+            <option value="Yusep Maumali">Yusep Maumali</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="subject-grid">
+        <div class="subject-btn mat" onclick="startQuiz('matematika')">
+          <img src="https://img.icons8.com/color/96/000000/calculator.png" alt="Matematika">
+          <h3>Matematika</h3>
+        </div>
+        <div class="subject-btn indo" onclick="startQuiz('indonesia')">
+          <img src="https://img.icons8.com/color/96/000000/abc.png" alt="B. Indonesia">
+          <h3>B. Indonesia</h3>
+        </div>
+        <div class="subject-btn ipas" onclick="startQuiz('ipas')">
+          <img src="https://img.icons8.com/color/96/000000/leaf.png" alt="IPAS">
+          <h3>IPAS</h3>
+        </div>
+        <div class="subject-btn ppkn" onclick="startQuiz('ppkn')">
+          <img src="https://img.icons8.com/color/96/000000/indonesia.png" alt="PPKn">
+          <h3>PPKn</h3>
+        </div>
+      </div>
+
+      <!-- Konfigurasi Kontak Guru -->
+      <div class="teacher-config">
+        <p><strong>Pengaturan WhatsApp Guru:</strong></p>
+        <div style="display: flex; gap: 8px; margin-top: 5px;">
+          <input type="text" id="wa-number" placeholder="No WhatsApp Guru (cth: 628123456789)" value="628123456789" style="font-size:0.9rem; padding:6px;">
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. SCREEN KUIS -->
+    <div id="screen-quiz" class="screen">
+      <div class="quiz-header">
+        <span class="badge" id="quiz-title">Matematika</span>
+        <button class="btn-audio" onclick="readQuestionAudio()">
+          🔊 Baca Soal
+        </button>
+        <span class="badge" id="question-number">Soal 1/10</span>
+      </div>
+
+      <div class="question-box">
+        <p class="question-text" id="question-text">Berapa jumlah benda berikut?</p>
+        <img id="question-img" class="question-img" src="" alt="Gambar Soal">
+      </div>
+
+      <div class="options-grid" id="options-container">
+        <!-- Opsi Dinamis -->
+      </div>
+    </div>
+
+    <!-- 3. SCREEN HASIL & SKOR -->
+    <div id="screen-result" class="screen">
+      <div class="result-box">
+        <h2>Hasil Belajar</h2>
+        <div id="score-display" class="score-display">0</div>
+        <p id="feedback-msg" class="feedback-msg">Kamu Hebat!</p>
+
+        <div class="actions-box">
+          <button class="btn-action btn-sheet" onclick="sendToGoogleSheet()">
+            📊 Simpan Otomatis ke Google Sheet
+          </button>
+          <button class="btn-action btn-wa" onclick="sendToWhatsApp()">
+            📲 Kirim Nilai ke WA Guru
+          </button>
+          <button class="btn-action btn-csv" onclick="downloadCSV()">
+            📥 Unduh Bukti Nilai (CSV)
+          </button>
+          <button class="btn-action btn-home" onclick="goHome()">
+            🏠 Kembali ke Menu Utama
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // URL Google Apps Script yang Sudah Terintegrasi
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwtNLXDszXgOJN3AZaUmp78SMsamMhDKQuopdanwynSI7F22L6Rs2f4u1_jzyv9bfPNvw/exec";
+
+    // BANK SOAL (10 Soal per Mata Pelajaran)
+    const bankSoal = {
+      matematika: [
+        {
+          q: "Ada 2 bebek bertemu 1 bebek. Berapa jumlah bebek semuanya?",
+          img: "https://placehold.co/400x200/FFF9E6/FF595E?text=🦆🦆++%2B++🦆",
+          options: [{ text: "3" }, { text: "2" }, { text: "4" }, { text: "1" }],
+          answer: 0
+        },
+        {
+          q: "Hitung jumlah apel di gambar: 3 Apel + 2 Apel = ...",
+          img: "https://placehold.co/400x200/FFF9E6/FF595E?text=🍎🍎🍎++%2B++🍎🍎",
+          options: [{ text: "4" }, { text: "5" }, { text: "6" }, { text: "3" }],
+          answer: 1
+        },
+        {
+          q: "Berapa jumlah bintang ini? ⭐ + ⭐ = ...",
+          img: "https://placehold.co/400x200/FFF9E6/FF595E?text=⭐++%2B++⭐",
+          options: [{ text: "1" }, { text: "2" }, { text: "3" }, { text: "4" }],
+          answer: 1
+        },
+        {
+          q: "4 Es Krim dikurangi 1 Es Krim (🍦🍦🍦🍦 - 🍦). Sisa berapa?",
+          img: "https://placehold.co/400x200/FFF9E6/FF595E?text=🍦🍦🍦🍦---🍦",
+          options: [{ text: "2" }, { text: "3" }, { text: "4" }, { text: "1" }],
+          answer: 1
+        },
+        {
+          q: "Hitung total kelereng: 1 + 3 = ...",
+          img: "https://placehold.co/400x200/FFF9E6/FF595E?text=🔵++%2B++🔵🔵🔵",
+          options: [{ text: "4" }, { text: "5" }, { text: "3" }, { text: "2" }],
+          answer: 0
+        },
+        {
+          q: "Berapa jumlah mobil ini? 🚗 + 🚗 + 🚗 = ...",
+          img: "https://placehold.co/400x200/FFF9E6/FF595E?text=🚗++%2B++🚗++%2B++🚗",
+          options: [{ text: "2" }, { text: "3" }, { text: "4" }, { text: "5" }],
+          answer: 1
+        },
+        {
+          q: "5 Balon meletus 2 Balon (🎈🎈🎈🎈🎈 - 🎈🎈). Sisa berapa?",
+          img: "https://placehold.co/400x200/FFF9E6/FF595E?text=🎈🎈🎈🎈🎈---🎈🎈",
+          options: [{ text: "3" }, { text: "2" }, { text: "1" }, { text: "4" }],
+          answer: 0
+        },
+        {
+          q: "Manakah angka DUA?",
+          img: "https://placehold.co/400x200/FFF9E6/FF595E?text=Angka+Berapa+Ini%3F",
+          options: [{ text: "1" }, { text: "2" }, { text: "3" }, { text: "4" }],
+          answer: 1
+        },
+        {
+          q: "Hitung jumlah jeruk: 2 Jeruk + 2 Jeruk = ...",
+          img: "https://placehold.co/400x200/FFF9E6/FF595E?text=🍊🍊++%2B++🍊🍊",
+          options: [{ text: "3" }, { text: "4" }, { text: "5" }, { text: "6" }],
+          answer: 1
+        },
+        {
+          q: "Hitung jumlah pensil: 3 + 3 = ...",
+          img: "https://placehold.co/400x200/FFF9E6/FF595E?text=✏️✏️✏️++%2B++✏️✏️✏️",
+          options: [{ text: "5" }, { text: "6" }, { text: "7" }, { text: "4" }],
+          answer: 1
+        }
+      ],
+
+      indonesia: [
+        {
+          q: "Gambar apakah ini? Huruf depannya adalah...",
+          img: "https://img.icons8.com/emoji/160/000000/cat-face-emoji.png",
+          options: [{ text: "K (Kucing)" }, { text: "A (Ayam)" }, { text: "B (Bebek)" }, { text: "M (Monyet)" }],
+          answer: 0
+        },
+        {
+          q: "Benda ini bernama 'BOLA'. Awalan huruf BOLA adalah...",
+          img: "https://img.icons8.com/emoji/160/000000/soccer-ball-emoji.png",
+          options: [{ text: "A" }, { text: "B" }, { text: "C" }, { text: "D" }],
+          answer: 1
+        },
+        {
+          q: "Buah ini bernama 'APEL'. Awalan huruf APEL adalah...",
+          img: "https://img.icons8.com/emoji/160/000000/red-apple-emoji.png",
+          options: [{ text: "A" }, { text: "E" }, { text: "I" }, { text: "O" }],
+          answer: 0
+        },
+        {
+          q: "Gambar 'GAJAH'. Awalan huruf GAJAH adalah...",
+          img: "https://img.icons8.com/emoji/160/000000/elephant-emoji.png",
+          options: [{ text: "H" }, { text: "G" }, { text: "J" }, { text: "K" }],
+          answer: 1
+        },
+        {
+          q: "Benda ini 'TOPI'. Awalan huruf TOPI adalah...",
+          img: "https://img.icons8.com/emoji/160/000000/billed-cap-emoji.png",
+          options: [{ text: "T" }, { text: "P" }, { text: "L" }, { text: "M" }],
+          answer: 0
+        },
+        {
+          q: "Gambar 'IKAN'. Awalan huruf IKAN adalah...",
+          img: "https://img.icons8.com/emoji/160/000000/fish-emoji.png",
+          options: [{ text: "U" }, { text: "I" }, { text: "A" }, { text: "O" }],
+          answer: 1
+        },
+        {
+          q: "Ini adalah 'MATAHARI'. Awalan huruf MATAHARI adalah...",
+          img: "https://img.icons8.com/emoji/160/000000/sun-behind-cloud-emoji.png",
+          options: [{ text: "M" }, { text: "N" }, { text: "S" }, { text: "T" }],
+          answer: 0
+        },
+        {
+          q: "Gambar 'ROTI'. Awalan huruf ROTI adalah...",
+          img: "https://img.icons8.com/emoji/160/000000/bread-emoji.png",
+          options: [{ text: "B" }, { text: "R" }, { text: "P" }, { text: "T" }],
+          answer: 1
+        },
+        {
+          q: "Ini adalah 'PENSIL'. Awalan huruf PENSIL adalah...",
+          img: "https://img.icons8.com/emoji/160/000000/pencil-emoji.png",
+          options: [{ text: "P" }, { text: "B" }, { text: "D" }, { text: "K" }],
+          answer: 0
+        },
+        {
+          q: "Gambar 'ULAR'. Awalan huruf ULAR adalah...",
+          img: "https://img.icons8.com/emoji/160/000000/snake-emoji.png",
+          options: [{ text: "A" }, { text: "O" }, { text: "U" }, { text: "E" }],
+          answer: 2
+        }
+      ],
+
+      ipas: [
+        {
+          q: "Gambar ini termasuk HEWAN atau TUMBUHAN?",
+          img: "https://img.icons8.com/emoji/160/000000/deciduous-tree-emoji.png",
+          options: [{ text: "Tumbuhan" }, { text: "Hewan" }],
+          answer: 0
+        },
+        {
+          q: "Kucing termasuk ke dalam kelompok...",
+          img: "https://img.icons8.com/emoji/160/000000/cat-emoji.png",
+          options: [{ text: "Hewan" }, { text: "Tumbuhan" }],
+          answer: 0
+        },
+        {
+          q: "Bunga Mawar termasuk ke dalam kelompok...",
+          img: "https://img.icons8.com/emoji/160/000000/rose-emoji.png",
+          options: [{ text: "Hewan" }, { text: "Tumbuhan" }],
+          answer: 1
+        },
+        {
+          q: "Kupu-kupu adalah...",
+          img: "https://img.icons8.com/emoji/160/000000/butterfly-emoji.png",
+          options: [{ text: "Hewan" }, { text: "Tumbuhan" }],
+          answer: 0
+        },
+        {
+          q: "Pohon Kelapa termasuk...",
+          img: "https://img.icons8.com/emoji/160/000000/palm-tree-emoji.png",
+          options: [{ text: "Tumbuhan" }, { text: "Hewan" }],
+          answer: 0
+        },
+        {
+          q: "Ikan Mas yang berenang di air termasuk...",
+          img: "https://img.icons8.com/emoji/160/000000/tropical-fish-emoji.png",
+          options: [{ text: "Hewan" }, { text: "Tumbuhan" }],
+          answer: 0
+        },
+        {
+          q: "Rumput hijau di lapangan termasuk...",
+          img: "https://img.icons8.com/emoji/160/000000/herb-emoji.png",
+          options: [{ text: "Hewan" }, { text: "Tumbuhan" }],
+          answer: 1
+        },
+        {
+          q: "Burung terbang di udara termasuk...",
+          img: "https://img.icons8.com/emoji/160/000000/bird-emoji.png",
+          options: [{ text: "Hewan" }, { text: "Tumbuhan" }],
+          answer: 0
+        },
+        {
+          q: "Pohon Pisang termasuk jenis...",
+          img: "https://img.icons8.com/emoji/160/000000/banana-emoji.png",
+          options: [{ text: "Tumbuhan" }, { text: "Hewan" }],
+          answer: 0
+        },
+        {
+          q: "Sapi makan rumput. Sapi adalah...",
+          img: "https://img.icons8.com/emoji/160/000000/cow-emoji.png",
+          options: [{ text: "Hewan" }, { text: "Tumbuhan" }],
+          answer: 0
+        }
+      ],
+
+      ppkn: [
+        {
+          q: "Bendera Negara Indonesia warnanya apa?",
+          img: "https://img.icons8.com/color/160/000000/indonesia.png",
+          options: [{ text: "Merah Putih" }, { text: "Biru Kuning" }, { text: "Hijau Hitam" }, { text: "Merah Hijau" }],
+          answer: 0
+        },
+        {
+          q: "Apa nama lambang negara Indonesia ini?",
+          img: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/National_emblem_of_Indonesia_Garuda_Pancasila.svg/160px-National_emblem_of_Indonesia_Garuda_Pancasila.svg.png",
+          options: [{ text: "Burung Garuda" }, { text: "Burung Elang" }, { text: "Burung Merpati" }, { text: "Burung Hantu" }],
+          answer: 0
+        },
+        {
+          q: "Pohon Beringin adalah simbol Pancasila sila ke...",
+          img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/b2/Pancasila_Sila_3.svg/160px-Pancasila_Sila_3.svg.png",
+          options: [{ text: "Sila 3" }, { text: "Sila 1" }, { text: "Sila 5" }, { text: "Sila 2" }],
+          answer: 0
+        },
+        {
+          q: "Bintang Emas adalah simbol Pancasila sila ke-1. Apa bunyinya?",
+          img: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Pancasila_Sila_1.svg/160px-Pancasila_Sila_1.svg.png",
+          options: [{ text: "Ketuhanan Yang Maha Esa" }, { text: "Persatuan Indonesia" }, { text: "Keadilan Sosial" }],
+          answer: 0
+        },
+        {
+          q: "Gambar Rantai Emas adalah simbol sila ke...",
+          img: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Pancasila_Sila_2.svg/160px-Pancasila_Sila_2.svg.png",
+          options: [{ text: "Sila 2" }, { text: "Sila 4" }, { text: "Sila 1" }],
+          answer: 0
+        },
+        {
+          q: "Kepala Banteng adalah simbol sila ke...",
+          img: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Pancasila_Sila_4.svg/160px-Pancasila_Sila_4.svg.png",
+          options: [{ text: "Sila 4" }, { text: "Sila 3" }, { text: "Sila 5" }],
+          answer: 0
+        },
+        {
+          q: "Padi dan Kapas adalah simbol sila ke...",
+          img: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Pancasila_Sila_5.svg/160px-Pancasila_Sila_5.svg.png",
+          options: [{ text: "Sila 5" }, { text: "Sila 1" }, { text: "Sila 2" }],
+          answer: 0
+        },
+        {
+          q: "Warna MERAH pada bendera artinya...",
+          img: "https://img.icons8.com/color/160/000000/indonesia.png",
+          options: [{ text: "Berani" }, { text: "Suci" }, { text: "Bersih" }],
+          answer: 0
+        },
+        {
+          q: "Warna PUTIH pada bendera artinya...",
+          img: "https://img.icons8.com/color/160/000000/indonesia.png",
+          options: [{ text: "Suci / Bersih" }, { text: "Berani" }, { text: "Takut" }],
+          answer: 0
+        },
+        {
+          q: "Semboyan negara kita adalah Bhinneka Tunggal Ika. Artinya...",
+          img: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/National_emblem_of_Indonesia_Garuda_Pancasila.svg/160px-National_emblem_of_Indonesia_Garuda_Pancasila.svg.png",
+          options: [{ text: "Berbeda-beda tetap satu jua" }, { text: "Bersatu kita teguh" }, { text: "Maju terus pantang mundur" }],
+          answer: 0
+        }
+      ]
+    };
+
+    // Global App State
+    let currentSubject = '';
+    let currentQuestions = [];
+    let currentIdx = 0;
+    let score = 0;
+    let studentName = '';
+
+    function showScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(screenId).classList.add('active');
+    }
+
+    function startQuiz(subject) {
+      const select = document.getElementById('student-select');
+      studentName = select.value;
+
+      if (!studentName) {
+        alert("Silakan pilih Nama Siswa terlebih dahulu ya! 😊");
+        speakText("Silakan pilih Nama Siswa terlebih dahulu ya!");
+        return;
+      }
+
+      currentSubject = subject;
+      currentQuestions = bankSoal[subject];
+      currentIdx = 0;
+      score = 0;
+
+      const titleMap = {
+        matematika: 'Matematika 🔢',
+        indonesia: 'B. Indonesia 🔤',
+        ipas: 'IPAS 🌿',
+        ppkn: 'PPKn 🇮🇩'
+      };
+      document.getElementById('quiz-title').innerText = titleMap[subject];
+
+      showScreen('screen-quiz');
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      const q = currentQuestions[currentIdx];
+      document.getElementById('question-number').innerText = `Soal ${currentIdx + 1}/10`;
+      document.getElementById('question-text').innerText = q.q;
+      document.getElementById('question-img').src = q.img;
+
+      const container = document.getElementById('options-container');
+      container.innerHTML = '';
+
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.onclick = () => checkAnswer(idx);
+        btn.innerHTML = `<span>${opt.text}</span>`;
+        container.appendChild(btn);
+      });
+
+      setTimeout(() => readQuestionAudio(), 300);
+    }
+
+    function checkAnswer(selectedIdx) {
+      const q = currentQuestions[currentIdx];
+      if (selectedIdx === q.answer) {
+        score += 10;
+        speakText("Pintar!");
+      } else {
+        speakText("Coba lagi ya");
+      }
+
+      currentIdx++;
+      if (currentIdx < currentQuestions.length) {
+        loadQuestion();
+      } else {
+        showResult();
+      }
+    }
+
+    function readQuestionAudio() {
+      const qText = document.getElementById('question-text').innerText;
+      speakText(qText);
+    }
+
+    function speakText(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'id-ID';
+        utterance.rate = 0.85;
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
+    function showResult() {
+      showScreen('screen-result');
+      const scoreDisplay = document.getElementById('score-display');
+      const feedbackMsg = document.getElementById('feedback-msg');
+
+      scoreDisplay.innerText = score;
+
+      if (score >= 70) {
+        scoreDisplay.className = "score-display score-high";
+        feedbackMsg.innerText = "🌟 Kamu Hebat! 🌟";
+        speakText("Kamu Hebat! Selamat ya!");
+        triggerConfetti();
+      } else {
+        scoreDisplay.className = "score-display score-low";
+        feedbackMsg.innerText = "💪 Ayo Semangat, Belajar lagi ya! 😊";
+        speakText("Ayo Semangat, Belajar lagi ya!");
+      }
+    }
+
+    function triggerConfetti() {
+      if (typeof confetti === 'function') {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+      }
+    }
+
+    function goHome() {
+      showScreen('screen-menu');
+    }
+
+    // --- FITUR INTEGRASI OTOMATIS SWAP GOOGLE SHEET ---
+    function sendToGoogleSheet() {
+      const mapelTitle = document.getElementById('quiz-title').innerText;
+
+      const payload = {
+        tanggal: new Date().toLocaleDateString('id-ID'),
+        nama: studentName,
+        mapel: mapelTitle,
+        skor: score
+      };
+
+      fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      })
+      .then(() => {
+        alert("✅ Nilai " + studentName + " berhasil dikirim langsung ke Google Sheet!");
+      })
+      .catch((err) => {
+        alert("Terjadi kendala saat mengirim data. Pastikan koneksi internet terhubung.");
+        console.error(err);
+      });
+    }
+
+    function sendToWhatsApp() {
+      const waNumber = document.getElementById('wa-number').value || '628123456789';
+      const mapelName = document.getElementById('quiz-title').innerText;
+      
+      const message = `Halo Bapak/Ibu Guru,%0A%0ABerikut Laporan Hasil Belajar Siswa:%0A👤 *Nama:* ${encodeURIComponent(studentName)}%0A📚 *Mata Pelajaran:* ${encodeURIComponent(mapelName)}%0A💯 *Skor/Nilai:* ${score}/100%0A%0ATerima kasih!`;
+      
+      window.open(`https://wa.me/${waNumber}?text=${message}`, '_blank');
+    }
+
+    function downloadCSV() {
+      const dateStr = new Date().toLocaleDateString('id-ID');
+      const csvContent = "data:text/csv;charset=utf-8," 
+        + "Tanggal,Nama Siswa,Mata Pelajaran,Skor\n"
+        + `"${dateStr}","${studentName}","${currentSubject}",${score}`;
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `Nilai_${studentName}_${currentSubject}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>
